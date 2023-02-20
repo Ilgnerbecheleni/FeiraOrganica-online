@@ -1,18 +1,23 @@
 import { Button, Snackbar, InputLabel, Select, MenuItem } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
-import {  useState } from 'react';
+import {  useContext, useMemo, useState } from 'react';
 import { Container, Voltar, TotalContainer, PagamentoContainer} from './styles';
 import { useCarrinhoContext } from 'Common/context/Carrinho';
 import Produto from 'components/Produto';
 import { useHistory } from 'react-router-dom';
 import {  usePagamentoContext } from 'Common/context/Pagamento';
+import { UsuarioContext } from 'Common/context/Usuario';
 
 function Carrinho() {
   const history = useHistory();
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const {carrinho,valorTotalCarrinho} = useCarrinhoContext();
+  const {carrinho,valorTotalCarrinho,efetuarCompra} = useCarrinhoContext();
+  const {saldo=0} = useContext(UsuarioContext);
   const {formaPagamento , tiposPagamento ,mudarFormaPagamento} = usePagamentoContext();
 
+
+  const total = useMemo(()=>saldo - valorTotalCarrinho,[saldo,valorTotalCarrinho]); //funcao que so executa se um ou outro for atualizado
   return (
     <Container>
       <Voltar onClick={()=>{history.goBack()}}/>
@@ -52,19 +57,21 @@ function Carrinho() {
           </div>
           <div>
             <h2> Saldo: </h2>
-            <span> R$ </span>
+            <span> R$ {Number(saldo).toFixed(2)}</span>
           </div>
           <div>
             <h2> Saldo Total: </h2>
-            <span> R$ </span>
+            <span> R${total.toFixed(2)} </span>
           </div>
         </TotalContainer>
       <Button
         onClick={() => {
+          efetuarCompra();
           setOpenSnackbar(true);
         }}
         color="primary"
         variant="contained"
+        disabled={total<0 || carrinho.length ===0}
       >
          Comprar
        </Button>
@@ -76,7 +83,10 @@ function Carrinho() {
             }
           }
           open={openSnackbar}
-          onClose={() => setOpenSnackbar(false)}
+          onClose={() => {
+
+            setOpenSnackbar(false)
+          }}
         >
            <MuiAlert
             onClose={() => setOpenSnackbar(false)}
