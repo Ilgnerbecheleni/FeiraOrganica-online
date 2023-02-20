@@ -1,4 +1,4 @@
-import React,{createContext, useContext, useState} from 'react'
+import React,{createContext, useContext, useEffect, useState} from 'react'
 
 export const CarrinhnoContext = createContext();
 CarrinhnoContext.displayName = "Carrinho";
@@ -6,8 +6,9 @@ CarrinhnoContext.displayName = "Carrinho";
 
 export const CarrinhoProvider = ({children})=>{
 const [carrinho , setCarrinho] = useState([]);
+const [quantidadeProdutos , setQuantidadeProdutos] = useState(0);
     return(
-        <CarrinhnoContext.Provider value = {{carrinho , setCarrinho}}>
+        <CarrinhnoContext.Provider value = {{carrinho , setCarrinho ,quantidadeProdutos ,setQuantidadeProdutos}}>
             {children}
         </CarrinhnoContext.Provider>
     )
@@ -16,7 +17,7 @@ const [carrinho , setCarrinho] = useState([]);
 }
 
 export const useCarrinhoContext = ()=>{
-const  {carrinho , setCarrinho } = useContext(CarrinhnoContext);
+const  {carrinho , setCarrinho , quantidadeProdutos ,setQuantidadeProdutos} = useContext(CarrinhnoContext);
 
 function mudarQuantidade(id ,quantidade){
 
@@ -25,6 +26,15 @@ function mudarQuantidade(id ,quantidade){
         if(itemdocarrinho.id===id) itemdocarrinho.unidade +=quantidade;
       return itemdocarrinho;
 })}
+
+useEffect(() => {
+    const novaQuantidadeProduto = carrinho.reduce((contador , produto)=> contador + produto.unidade , 0)
+
+setQuantidadeProdutos(novaQuantidadeProduto);
+
+
+
+}, [carrinho,setQuantidadeProdutos]);
 
 
 function adicionarProduto(novoProduto){
@@ -47,5 +57,5 @@ setCarrinho(mudarQuantidade(id,-1));
 
     }
 
-return { carrinho,setCarrinho ,adicionarProduto,removerProduto}
+return { carrinho,setCarrinho ,adicionarProduto,removerProduto ,quantidadeProdutos}
 }
